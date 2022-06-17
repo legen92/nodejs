@@ -31,7 +31,7 @@ UsersRouter.get("/:id", jsonParse, async (req, res) => {
   }
 });
 
-//create a user new
+//create a user new, check username, email from client
 UsersRouter.post("/", jsonParse, async (req, res) => {
   const userReq = req.body;
   try {
