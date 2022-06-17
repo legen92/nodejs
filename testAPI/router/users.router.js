@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParse = require("body-parser");
 const UsersRouter = express.Router();
 const { sequelize, UserModel } = require("../models/users.model");
+const { Op } = require("sequelize");
 
 const jsonParse = bodyParse.json();
 
@@ -12,75 +13,131 @@ UsersRouter.get("/", jsonParse, async (req, res) => {
 });
 
 //get a user
-UsersRouter.get("/user", jsonParse, (req, res) => {
-  const user = req.body;
-  UserModel.findOne({
-    where: {
-      firstName: `${user.firstName}`,
-    },
-  })
-    .then((data) => {
-      res.status(200).json(data);
-    })
-    .catch((err) => {
-      res.status(400).json(err);
+UsersRouter.get("/:id", jsonParse, async (req, res) => {
+  const id = req.params.id;
+  try {
+    const user = await UserModel.findOne({
+      where: {
+        id: id,
+      },
     });
+    if (user === null) {
+      return res.status(404).json({ message: "not found" });
+    } else {
+      res.status(200).json(user);
+    }
+  } catch (error) {
+    return res.status(500).json({ message: "server got error" });
+  }
 });
 
 //create a user new
-UsersRouter.post("/user", jsonParse, (req, res) => {
-  const user = req.body;
-  UserModel.create({
-    username: `${user.username}`,
-    email: `${user.email}`,
-    password: `${user.password}`,
-  })
-    .then((data) => {
-      res.status(200).json(data);
-    })
-    .catch((err) => {
-      res.status(400).json(err);
+UsersRouter.post("/", jsonParse, async (req, res) => {
+  const userReq = req.body;
+  try {
+    const userUsername = await UserModel.findOne({
+      where: {
+        username: userReq.username,
+      },
     });
+    if (userUsername) {
+      return res.status(404).json({ message: "username already exists" });
+    } else {
+      try {
+        const UserEmail = await UserModel.findOne({
+          where: {
+            email: userReq.email,
+          },
+        });
+        if (UserEmail) {
+          return res.status(404).json({ message: "email already exists" });
+        } else {
+          const userNew = await UserModel.create({
+            username: userReq.username,
+            email: userReq.email,
+            password: userReq.password,
+          });
+          res.status(201).json("data created successfully");
+        }
+      } catch (error) {
+        return res.status(500).json({ message: "server got error" });
+      }
+    }
+  } catch (error) {
+    return res.status(500).json({ message: "server got error" });
+  }
 });
 
 //update a user
-UsersRouter.put("/user", jsonParse, (req, res) => {
+UsersRouter.put("/:id", jsonParse, async (req, res) => {
   // http://localhost:8080/users/user?id=1
-  const user = req.query;
+  const id = req.params.id;
   const userReq = req.body;
-  UserModel.update(
-    {
-      firstName: `${userReq.firstName}`,
-    },
-    {
+  try {
+    const userID = await UserModel.findOne({
       where: {
-        id: `${user.id}`,
+        id: id,
       },
-    }
-  )
-    .then((data) => {
-      res.status(200).json(data);
-    })
-    .catch((err) => {
-      res.status(400).json(err);
     });
+    if (!userID) {
+      return res.status(404).json({ message: "not found data from client" });
+    } else {
+      try {
+        const UserEmail = await UserModel.findOne({
+          where: {
+            email: userReq.email,
+          },
+        });
+        if (UserEmail) {
+          return res.status(404).json({ message: "email already exists" });
+        } else {
+          await UserModel.update(
+            {
+              email: userReq.email,
+            },
+            {
+              where: {
+                email: userID.email,
+              },
+            }
+          );
+          res.status(202).json("Data update successfully");
+        }
+      } catch (error) {
+        return res.status(500).json({ message: "server got error" });
+      }
+    }
+  } catch (error) {
+    return res.status(500).json({ message: "server got error" });
+  }
 });
 
 //delete a user
-UsersRouter.delete("/user", jsonParse, (req, res) => {
+UsersRouter.delete("/:id", jsonParse,async (req, res) => {
   // http://localhost:8080/users/user?id=1
-  const user = req.query;
-  UserModel.destroy({
-    where: {
-      id: `${user.id}`,
-    },
-  })
-    .then((data) => {
-      res.status(200).json(data);
-    })
-    .catch((err) => {
-      res.status(400).json(err);
+  const id = req.params.id;
+  try {
+    const userID = await UserModel.findOne({
+      where: {
+        id: id,
+      },
     });
+    if (!userID) {
+      return res.status(404).json({ message: "not found data from client" });
+    } else {
+      await UserModel.destroy(
+        {
+          where: {
+            id: id,
+          },
+        }
+      );
+      res.status(200).json("Data delete successfully");
+    }
+  } catch (error) {
+    return res.status(500).json({ message: "server got error" });
+  }
+  
 });
 
 module.exports = UsersRouter;
