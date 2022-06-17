@@ -68,7 +68,7 @@ UsersRouter.post("/", jsonParse, async (req, res) => {
   }
 });
 
-//update a user
+//update email from a user
 UsersRouter.put("/:id", jsonParse, async (req, res) => {
   // http://localhost:8080/users/user?id=1
   const id = req.params.id;
