@@ -7,8 +7,7 @@ const verifyToken = (req, res, next) => {
     return res.status(404).json({message:"Forbidden! You don't have permission to access this resource."})
   }
   try {
-    const { username } = jwt.verify(tok,SECRET_AccessToken)
-    req.username = username;
+    const token = jwt.verify(tok,SECRET_AccessToken)
     next();
   } catch (error) {
     return res.status(401).json({ message: "Unauthorized!" });

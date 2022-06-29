@@ -20,9 +20,20 @@ const Auth = {
       res.status(500).json({ message: "server error" });
     }
   },
-  login: (req, res) => {
-    const { username,role } = req.body;
-    const accessToken = jwt.sign({ username,role }, SECRET.SECRET_AccessToken, { expiresIn: '1d' });
+  login: async (req, res) => {
+    const { username } = req.body;
+    const found = await db.User.findOne({ where: { username } });
+
+    const accessToken = jwt.sign(
+      
+      { username: found.dataValues.username,
+        role:found.dataValues.role
+        },
+      SECRET.SECRET_AccessToken,
+      {
+        expiresIn: "1d",
+      }
+    );
     res.status(200).json({
       message: "login success",
       accessToken,
