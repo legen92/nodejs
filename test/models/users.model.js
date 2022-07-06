@@ -12,10 +12,7 @@ const User = connection.define("User", {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      len: {
-        args:[3, 25],
-        msg:"lon hon 3 nho hon 25"
-      }
+      len: [3, 25],
     },
   },
   username: {
@@ -29,16 +26,14 @@ const User = connection.define("User", {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      isEmail: {
-        msg:"phai la email"
-      }
+      isEmail: true,
     },
   },
   iam_role: {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      isIn: [["admin","moderator","member"]],
+      isIn: [["admin", "moderator", "member"]],
     },
   },
   hash_pwd: {
